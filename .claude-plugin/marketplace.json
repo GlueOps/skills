@@ -1,0 +1,11 @@
+{
+  "name": "glueops",
+  "owner": { "name": "GlueOps", "url": "https://github.com/GlueOps" },
+  "plugins": [
+    {
+      "name": "glueops",
+      "source": "./",
+      "description": "Reusable GlueOps Agent Skills — release-please setup and dependency-update consolidation."
+    }
+  ]
+}

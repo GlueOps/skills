@@ -1,0 +1,6 @@
+{
+  "name": "glueops",
+  "description": "Reusable GlueOps Agent Skills — release automation (release-please) and dependency-update consolidation. Skills load namespaced as /glueops:<skill>.",
+  "version": "0.1.0",
+  "author": { "name": "GlueOps" }
+}
