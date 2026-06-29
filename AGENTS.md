@@ -5,8 +5,9 @@ Guidance for AI agents working in this repository.
 This repo is a library of [Agent Skills](https://agentskills.io) (open, vendor-neutral standard).
 When asked to **add or edit a skill**, follow [CONTRIBUTING.md](CONTRIBUTING.md). The essentials:
 
-- One directory per skill at the repo root: `<skill-name>/SKILL.md`. The frontmatter `name` must
-  match the directory name (lowercase, hyphenated).
+- One directory per skill under `skills/`: `skills/<skill-name>/SKILL.md`. The frontmatter `name`
+  must match the directory name (lowercase, hyphenated). (The repo is packaged as the Claude Code
+  plugin `glueops`, which scans `skills/` and namespaces them as `/glueops:<skill-name>`.)
 - Frontmatter: standard fields only — `name`, `description`, and optionally `compatibility` /
   `license` / `metadata`. **No vendor-specific fields** (`disable-model-invocation`,
   `argument-hint`, `context`, `` !`cmd` `` injection).

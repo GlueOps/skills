@@ -13,9 +13,11 @@ one-off fact or a single command, it's probably not a skill — it's documentati
 
 ## Add a skill
 
-1. **Create the directory** at the repo root: `<skill-name>/` — lowercase, hyphenated, ≤64 chars.
-   The frontmatter `name` **must match the directory name**.
-2. **Write `<skill-name>/SKILL.md`** (see the template below).
+1. **Create the directory** under `skills/`: `skills/<skill-name>/` — lowercase, hyphenated,
+   ≤64 chars. The frontmatter `name` **must match the directory name**. (Skills live under
+   `skills/` because the repo is also packaged as the Claude Code plugin `glueops`, which scans
+   that directory and namespaces them as `/glueops:<skill-name>`.)
+2. **Write `skills/<skill-name>/SKILL.md`** (see the template below).
 3. **Put bulky supporting files in a subdirectory** (`templates/`, `scripts/`, `references/`)
    and reference them from `SKILL.md` by relative path. Keep `SKILL.md` focused (rule of thumb:
    under ~500 lines) — this is *progressive disclosure*: the agent loads `SKILL.md` first and
