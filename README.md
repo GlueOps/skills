@@ -32,14 +32,6 @@ one you need.
 
 ## Contributing
 
-- One directory per skill; the frontmatter `name` must match the directory name (lowercase,
-  hyphenated).
-- Use only **standard** Agent Skills frontmatter: `name` + `description` (required), and
-  optionally `compatibility`, `license`, `metadata`. **Avoid vendor-specific extensions** (e.g.
-  `disable-model-invocation`, `argument-hint`, `context`, `` !`cmd` `` injection) — only some
-  agents honor them; express that behavior as plain instructions in the body instead.
-  (`allowed-tools` is standard but experimental — use sparingly.)
-- Write instructions as neutral, imperative steps using standard CLI tools so any capable agent
-  can follow them.
-- Keep `SKILL.md` focused; push bulky content (templates, scripts, references) into supporting
-  files referenced by relative path.
+See **[CONTRIBUTING.md](CONTRIBUTING.md)** for how to author a skill — directory layout,
+frontmatter rules, writing a `description` that triggers well, portability, a `SKILL.md`
+template, and PR rules. AI agents working in this repo: see **[AGENTS.md](AGENTS.md)**.
