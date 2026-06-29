@@ -53,10 +53,15 @@ to all.
    - `node` — Node / SvelteKit (manages `package.json`)
    - `go` — Go
    - `simple` — anything else (tracks `version.txt`)
-3. Seed `.release-please-manifest.json`:
-   - brand-new repo → `0.0.0`
-   - repo with prior releases → the **last released version** (e.g. `1.4.2`). The existing
-     latest tag must be plain `vX.Y.Z` for release-please to pick up from it.
+3. Seed `.release-please-manifest.json` to match the repo's history. Check for existing tags:
+   ```bash
+   gh release view --repo GlueOps/<repo> --json tagName -q .tagName 2>/dev/null \
+     || git -C <repo> tag --sort=-v:refname | head -1
+   ```
+   - **No tags** → seed `0.0.0`: `{ ".": "0.0.0" }`.
+   - **A tag already exists** → seed to that latest version with the `v` stripped, e.g. tag
+     `v1.4.2` → `{ ".": "1.4.2" }`. This makes release-please continue from the last tag
+     instead of starting over. (The latest tag must be plain `vX.Y.Z` to be picked up.)
 4. Confirm the **secret-visibility** prerequisite above.
 5. Merge to `main`. The next `feat:` (minor) or `fix:` (patch) commit produces a release PR;
    `chore:`/`ci:`/`docs:` do not. Merging the release PR cuts the release + tag.
