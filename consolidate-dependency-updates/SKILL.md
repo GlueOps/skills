@@ -5,15 +5,16 @@ description: >-
   GitHub Actions SHA pins, Dockerfile base-image digests — into one PR that's built and tested in
   Docker, then close the superseded PRs. Use when bot update PRs have accumulated and should ship
   together. Works for any language because all building and testing run in containers.
+compatibility: Requires git, gh (GitHub CLI), docker, and jq.
 ---
 
 # Consolidate dependency updates (Renovate/Dependabot)
 
 Turn a pile of open bot PRs into **one** green, reviewable PR.
 
-**Requirements:** `git`, `gh` (GitHub CLI), and `docker` (`jq` helpful). Works for **any
-ecosystem** — Node, Go, Python, Ruby, Rust, etc. — because all dependency resolution, building,
-and testing happen in containers, so the host needs no language toolchains.
+Works for **any ecosystem** — Node, Go, Python, Ruby, Rust, etc. — because all dependency
+resolution, building, and testing happen in containers, so the host needs no language toolchains
+(just `docker`).
 
 > ⚠️ **Run with a human in the loop.** This skill closes other people's PRs and pushes a
 > branch/PR. Don't run it autonomously — confirm before closing the superseded PRs, and open the
@@ -44,19 +45,26 @@ that carries its own toolchain.
   Use `docker cp` into a running container, or `docker build <dir>` (the build context is uploaded).
 - Use the ecosystem's **reproducible/CI install**, not the loose one, for an authoritative result
   (e.g. `npm ci` not `npm install` — the loose install can skip lifecycle scripts; `go mod download`;
-  `pip install -r` / `poetry install --sync`).
+  `pip install -r` / `poetry sync`).
+- **Match the repo's declared toolchain version** for the container image (`.nvmrc`/`engines`,
+  `go.mod` `go` directive, the `Dockerfile` `FROM`) — regenerating a lockfile with the wrong
+  version can corrupt it.
 
 ## Steps
 
 ### 1. Inventory the bot PRs
 ```bash
-gh pr list --repo ORG/REPO --state open --limit 100 \
+gh pr list --repo ORG/REPO --state open --limit 200 \
   --json number,title,headRefName,author,mergeable,isDraft \
-  | jq '[.[] | select(.author.is_bot)]'
+  | jq '[.[] | select(.author.is_bot
+        or (.author.login|test("(?i)renovate|dependabot"))
+        or (.headRefName|test("^(renovate|dependabot)/")))]'
 ```
-Note: `gh pr list` caps results — page through if there are many. Group by what each touches:
-package deps (manifest + lockfile), GitHub Actions pins (`.github/workflows/*`), Docker base
-image (`Dockerfile` `FROM …@sha256:`).
+Note: `--limit 200` raises the default cap of 30 — increase it if the repo has more open PRs.
+Match by login/branch (not just `is_bot`) so self-hosted or PAT-driven Renovate (which commits as
+a user, not a bot) is still caught. Group by what each PR touches: package deps (manifest +
+lockfile), GitHub Actions pins (`.github/workflows/*`), Docker base image
+(`Dockerfile` `FROM …@sha256:`).
 
 ### 2. Pick the winning version per item
 When several PRs bump the same thing, take the **highest** target. Read exact targets from diffs:
@@ -79,14 +87,15 @@ git checkout -b chore/consolidate-dependency-updates
 ### 4. Regenerate the lockfile in a container (remote daemon → `docker cp`)
 Use a container for the repo's ecosystem and run its package manager. Node example:
 ```bash
-CID=$(docker run -d -w /app node:24-alpine sleep 600)
+CID=$(docker run -d -w /app node:24-alpine sleep 1800)   # generous; rm -f when done
 docker cp package.json "$CID":/app/; docker cp package-lock.json "$CID":/app/
 docker exec "$CID" sh -c 'cd /app && npm install --no-audit --no-fund'
 docker cp "$CID":/app/package-lock.json ./package-lock.json
 docker rm -f "$CID"
 ```
-Substitute per ecosystem: `go mod tidy` (golang image), `poetry lock` / `pip-compile` (python),
-`bundle lock` (ruby), `cargo update` (rust), etc.
+Substitute per ecosystem after editing the manifest: `go get <module>@<ver> && go mod tidy`
+(golang image), `poetry lock` / `pip-compile` (python), `bundle lock` (ruby),
+`cargo update -p <crate>` (targeted; bare `cargo update` over-updates), etc.
 
 ### 5. Validate in Docker — must be green
 ```bash
@@ -116,7 +125,8 @@ git push -u origin chore/consolidate-dependency-updates
 gh pr create --repo ORG/REPO --title "feat: consolidate dependency updates" --body "..."
 ```
 PR body should list: included bumps (with versions), any excluded bumps + reasons, and that
-validation passed in Docker. Then close every superseded bot PR with a pointer:
+validation passed in Docker. Then close every superseded bot PR with a pointer — ⚠️ **these are
+other people's/bot PRs; confirm with a human before closing them:**
 ```bash
 gh pr close <n> --repo ORG/REPO \
   --comment "Superseded by #<consolidated> (consolidates the open dependency updates)."
