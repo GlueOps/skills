@@ -5,12 +5,12 @@ description: >-
   release-triggering PR. Use when bot PRs have piled up — package/npm bumps, GitHub Actions SHA
   pins, Dockerfile base-image digests — and you want them merged together: every bot PR
   attempted, highest version wins, lockfile regenerated and everything built/tested in Docker,
-  committed as a feat/fix so release-please cuts a release, and superseded PRs closed.
+  committed with a release-triggering type (feat/fix, not chore), and superseded PRs closed.
 ---
 
 # Consolidate dependency updates (Renovate/Dependabot)
 
-Turn a pile of open bot PRs into **one** green, reviewable PR that also cuts a release.
+Turn a pile of open bot PRs into **one** green, reviewable PR.
 
 ## Principles (the decisions)
 
@@ -19,10 +19,9 @@ Turn a pile of open bot PRs into **one** green, reviewable PR that also cuts a r
 - **Highest version wins** when multiple PRs touch the same dep/action/image.
 - **One** consolidated PR.
 - **Everything builds/tests in Docker** (see below).
-- **Release-triggering commit:** the PR uses a conventional type release-please releases on —
-  default **`feat:`** (minor), or `fix:` for patch-only. **Never `chore(deps):`** (it won't cut
-  a release). The point is for the merge to produce a new release + image. See the
-  [release-please](../release-please/SKILL.md) skill.
+- **Release-triggering commit:** commit with a conventional **`feat:`** (default) or `fix:`
+  type — **never `chore(deps):`** — so the merge lands as a releasable, changelog-worthy change
+  (and triggers a new version in repos that automate releases).
 - **Open the PR for review (don't merge); close the superseded PRs.**
 
 ## Docker-only (hard rule)
@@ -106,7 +105,6 @@ gh pr close <n> --repo ORG/REPO \
   --comment "Superseded by #<consolidated> (consolidates the open dependency updates)."
 ```
 Leave excluded/unfixable PRs open. **Do not merge** the consolidated PR — leave it for review.
-On merge, release-please will cut a release (and the image build runs).
 
 ## Verify checklist
 - [ ] Every open bot PR is included, or excluded with a documented reason (open).
