@@ -31,7 +31,7 @@ Templates are in [`templates/`](templates/): `release-please.yaml`,
 `release-please-config.json`, `.release-please-manifest.json` (already dot-prefixed — copy as-is),
 and `container_image.yaml` (optional, see below). The action versions in the templates are
 SHA-pinned (with `# vX.Y.Z` comments); refresh them periodically (the
-[consolidate-dependency-updates](../consolidate-dependency-updates/SKILL.md) skill does this).
+consolidate-dependency-updates skill does this).
 
 ## Why the App token
 
