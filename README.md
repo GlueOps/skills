@@ -21,7 +21,7 @@ agent-specific extensions).
 | Skill | Use it when |
 |-------|-------------|
 | [release-please](release-please/SKILL.md) | Setting up release-please (versioning, changelog, tags, container-image publishing) on a GlueOps repo for the first time. |
-| [consolidate-dependency-updates](consolidate-dependency-updates/SKILL.md) | Collapsing a Node/npm repo's open Renovate/Dependabot PRs into one validated, release-triggering PR. |
+| [consolidate-dependency-updates](consolidate-dependency-updates/SKILL.md) | Collapsing a repo's open Renovate/Dependabot PRs (any ecosystem) into one validated, release-triggering PR. |
 
 ## Use
 

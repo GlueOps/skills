@@ -1,17 +1,19 @@
 ---
 name: consolidate-dependency-updates
 description: >-
-  Consolidate a Node/npm repo's piled-up Renovate/Dependabot PRs — npm bumps, GitHub Actions SHA
-  pins, Dockerfile base-image digests — into one PR that's built and tested in Docker, then close
-  the superseded PRs. Use when bot update PRs have accumulated and should ship together.
+  Consolidate a repo's piled-up Renovate/Dependabot PRs — dependency bumps (any ecosystem),
+  GitHub Actions SHA pins, Dockerfile base-image digests — into one PR that's built and tested in
+  Docker, then close the superseded PRs. Use when bot update PRs have accumulated and should ship
+  together. Works for any language because all building and testing run in containers.
 ---
 
 # Consolidate dependency updates (Renovate/Dependabot)
 
 Turn a pile of open bot PRs into **one** green, reviewable PR.
 
-**Requirements:** `git`, `gh` (GitHub CLI), `docker`, and `jq`. Assumes a **Node/npm** repo
-(`package.json` + lockfile); for other ecosystems adapt the lockfile/build/test commands.
+**Requirements:** `git`, `gh` (GitHub CLI), and `docker` (`jq` helpful). Works for **any
+ecosystem** — Node, Go, Python, Ruby, Rust, etc. — because all dependency resolution, building,
+and testing happen in containers, so the host needs no language toolchains.
 
 > ⚠️ **Run with a human in the loop.** This skill closes other people's PRs and pushes a
 > branch/PR. Don't run it autonomously — confirm before closing the superseded PRs, and open the
@@ -29,16 +31,20 @@ Turn a pile of open bot PRs into **one** green, reviewable PR.
   (and triggers a new version in repos that automate releases).
 - **Open the PR for review (don't merge); close the superseded PRs.**
 
-## Docker-only (hard rule)
+## Docker is the test environment (hard rule)
 
-- The host has only the `docker` CLI — no node/npm/etc. Run all lockfile regen, builds, and the
-  repo's checks/tests **inside containers** (e.g. `node:24-alpine`).
+Build and test **only** in containers — never with host toolchains. This is what makes the skill
+ecosystem-agnostic: the host needs nothing but `docker`, and each repo's work runs in an image
+that carries its own toolchain.
+- Prefer the repo's **own `Dockerfile`** (`docker build .`) — it already encodes the correct
+  toolchain and is the most faithful check, whatever the language.
+- For lockfile regen or running a repo's test command, use a container for that ecosystem
+  (`node:*`, `golang:*`, `python:*`, `ruby:*`, `rust:*`, …).
 - The Docker daemon may be **remote**, so bind mounts (`-v "$PWD":/app`) won't see your files.
-  Use `docker cp` into a running container, or `docker build <dir>` (the build context is
-  uploaded).
-- A plain `npm install` in a container can skip lifecycle scripts (npm allow-scripts, e.g.
-  esbuild's postinstall) and give misleading failures — use `npm ci` / `docker build` for the
-  authoritative result.
+  Use `docker cp` into a running container, or `docker build <dir>` (the build context is uploaded).
+- Use the ecosystem's **reproducible/CI install**, not the loose one, for an authoritative result
+  (e.g. `npm ci` not `npm install` — the loose install can skip lifecycle scripts; `go mod download`;
+  `pip install -r` / `poetry install --sync`).
 
 ## Steps
 
@@ -65,11 +71,13 @@ For Actions/Docker capture the exact pinned **SHA + version comment**
 git clone https://github.com/ORG/REPO && cd REPO
 git checkout -b chore/consolidate-dependency-updates
 ```
-- Package deps: set winning versions in the manifest (e.g. `package.json`).
+- Package deps: set winning versions in the manifest (`package.json`, `go.mod`,
+  `requirements.txt`/`pyproject.toml`, `Gemfile`, `Cargo.toml`, …).
 - GitHub Actions: swap each `uses: …@<sha> # vX` to the winning SHA + comment.
 - Dockerfile: update the base-image `@sha256:…` digest.
 
-### 4. Regenerate the lockfile in Docker (remote daemon → `docker cp`)
+### 4. Regenerate the lockfile in a container (remote daemon → `docker cp`)
+Use a container for the repo's ecosystem and run its package manager. Node example:
 ```bash
 CID=$(docker run -d -w /app node:24-alpine sleep 600)
 docker cp package.json "$CID":/app/; docker cp package-lock.json "$CID":/app/
@@ -77,13 +85,17 @@ docker exec "$CID" sh -c 'cd /app && npm install --no-audit --no-fund'
 docker cp "$CID":/app/package-lock.json ./package-lock.json
 docker rm -f "$CID"
 ```
+Substitute per ecosystem: `go mod tidy` (golang image), `poetry lock` / `pip-compile` (python),
+`bundle lock` (ruby), `cargo update` (rust), etc.
 
 ### 5. Validate in Docker — must be green
 ```bash
-docker build -t consolidate-check .          # the real image build
+docker build -t consolidate-check .          # the repo's own Dockerfile — language-agnostic
 ```
-Plus the repo's own checks/tests in a container (cp source into a `node:24-alpine` container,
-then `npm ci && npm run check` and any test script). Both must pass.
+If the repo has a `Dockerfile`, `docker build .` is the primary check — it exercises the real
+toolchain regardless of language. Also run the repo's declared checks/tests in a matching
+container (copy the source in, then its lint/test command — `npm ci && npm test`, `go test ./...`,
+`pytest`, `bundle exec rspec`, `cargo test`, …). All must pass.
 
 ### 6. Fix breakage first; drop only the unfixable
 If validation fails, **try to make every bump work** before giving up on any:
