@@ -1,16 +1,21 @@
 ---
 name: consolidate-dependency-updates
 description: >-
-  Consolidate a repo's open Renovate/Dependabot dependency-update PRs into one validated,
-  release-triggering PR. Use when bot PRs have piled up — package/npm bumps, GitHub Actions SHA
-  pins, Dockerfile base-image digests — and you want them merged together: every bot PR
-  attempted, highest version wins, lockfile regenerated and everything built/tested in Docker,
-  committed with a release-triggering type (feat/fix, not chore), and superseded PRs closed.
+  Consolidate a Node/npm repo's piled-up Renovate/Dependabot PRs — npm bumps, GitHub Actions SHA
+  pins, Dockerfile base-image digests — into one PR that's built and tested in Docker, then close
+  the superseded PRs. Use when bot update PRs have accumulated and should ship together.
 ---
 
 # Consolidate dependency updates (Renovate/Dependabot)
 
 Turn a pile of open bot PRs into **one** green, reviewable PR.
+
+**Requirements:** `git`, `gh` (GitHub CLI), `docker`, and `jq`. Assumes a **Node/npm** repo
+(`package.json` + lockfile); for other ecosystems adapt the lockfile/build/test commands.
+
+> ⚠️ **Run with a human in the loop.** This skill closes other people's PRs and pushes a
+> branch/PR. Don't run it autonomously — confirm before closing the superseded PRs, and open the
+> consolidated PR for review rather than merging it.
 
 ## Principles (the decisions)
 

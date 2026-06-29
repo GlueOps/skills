@@ -1,17 +1,19 @@
 # skills
 
-Reusable [Agent Skills](https://docs.claude.com/en/docs/claude-code/skills) for GlueOps.
+Reusable [Agent Skills](https://agentskills.io) for GlueOps.
+
+These follow the open, vendor-neutral [Agent Skills standard](https://agentskills.io/specification):
+a skill is a directory containing a `SKILL.md` (YAML frontmatter + instructions). They are
+written to work with **any** skills-compatible AI agent — the instructions use only standard CLI
+tools, and the frontmatter uses only the standard `name` + `description` fields (no
+agent-specific extensions).
 
 ## Layout
 
-Each skill is a directory with a `SKILL.md` (YAML frontmatter `name` + `description`, then
-instructions). Supporting files (templates, scripts) live alongside it and are referenced from
-`SKILL.md` by relative path.
-
 ```
 <skill-name>/
-  SKILL.md
-  templates/   # optional supporting files
+  SKILL.md     # required: `name` + `description` frontmatter, then instructions
+  templates/   # optional supporting files, referenced from SKILL.md by relative path
 ```
 
 ## Skills
@@ -19,4 +21,22 @@ instructions). Supporting files (templates, scripts) live alongside it and are r
 | Skill | Use it when |
 |-------|-------------|
 | [release-please](release-please/SKILL.md) | Setting up release-please (versioning, changelog, tags, container-image publishing) on a GlueOps repo for the first time. |
-| [consolidate-dependency-updates](consolidate-dependency-updates/SKILL.md) | Collapsing a repo's open Renovate/Dependabot PRs into one validated, release-triggering PR. |
+| [consolidate-dependency-updates](consolidate-dependency-updates/SKILL.md) | Collapsing a Node/npm repo's open Renovate/Dependabot PRs into one validated, release-triggering PR. |
+
+## Use
+
+Skills are consumed however your agent loads them — generically, place (or symlink) the skill
+directory into wherever your agent discovers skills, then invoke it by name. Each skill folder is
+self-contained, so you can also copy just the one you need.
+
+## Contributing
+
+- One directory per skill; the frontmatter `name` must match the directory name (lowercase,
+  hyphenated).
+- Keep frontmatter to the standard `name` + `description` only. **Do not** add agent-specific
+  fields (e.g. `allowed-tools`, `disable-model-invocation`, `argument-hint`, `context`) — they
+  break portability across agents. Express any such behavior as plain instructions in the body.
+- Write instructions as neutral, imperative steps using standard CLI tools so any capable agent
+  can follow them.
+- Keep `SKILL.md` focused; push bulky content (templates, scripts, references) into supporting
+  files referenced by relative path.

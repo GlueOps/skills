@@ -1,9 +1,9 @@
 ---
 name: release-please
 description: >-
-  Set up release automation (release-please) on a GlueOps repo using the public-release-please
-  GitHub App. Use when adding versioning, changelog, and vX.Y.Z tagging — plus
-  container-image-on-release — to a repo for the first time.
+  Set up release automation (release-please) on a GlueOps repo — Conventional-Commit release
+  PRs, CHANGELOG, vX.Y.Z tags, and container-image-on-release. Use when adding release
+  automation to a repo for the first time.
 ---
 
 # release-please (GlueOps convention)
@@ -12,6 +12,12 @@ release-please reads [Conventional Commits](https://www.conventionalcommits.org/
 maintains a "release PR" that bumps the version + updates `CHANGELOG.md`, and on merge cuts a
 GitHub release and `vX.Y.Z` tag. This skill is the **GlueOps-standard** greenfield setup, wired
 so releases also publish container images.
+
+**Requirements:** `git`, `gh` (GitHub CLI), and `npx`/Node (for the dry-run).
+
+> ⚠️ **Run with a human in the loop.** This skill deletes a workflow file and pushes a
+> branch/PR. Don't run it autonomously — confirm the plan before the destructive step (removing
+> the old version-bump workflow), and open the PR for review rather than merging it yourself.
 
 ## Non-negotiables (the convention)
 
@@ -24,7 +30,10 @@ so releases also publish container images.
 
 Templates are in [`templates/`](templates/): `release-please.yaml`,
 `release-please-config.json`, `release-please-manifest.json` (save the last one as
-**`.release-please-manifest.json`** — leading dot).
+**`.release-please-manifest.json`** — leading dot). The action versions in
+`templates/release-please.yaml` are SHA-pinned (with `# vX.Y.Z` comments); refresh them
+periodically (the [consolidate-dependency-updates](../consolidate-dependency-updates/SKILL.md)
+skill does this).
 
 ## Why the App token
 
