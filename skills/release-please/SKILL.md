@@ -26,6 +26,10 @@ so releases also publish container images.
 3. **Secrets** (org-level, already created): `RELEASE_PLEASE_APP_ID`, `RELEASE_PLEASE_APP_PRIVATE_KEY`.
 4. **Manifest mode:** `release-please-config.json` + `.release-please-manifest.json` at repo root.
 5. **Plain tags:** `"include-component-in-tag": false` → `vX.Y.Z` (no `reponame-` prefix).
+6. **Full changelog:** the config sets `changelog-sections` so every Conventional-Commit type
+   (feat, fix, perf, revert, docs, style, chore, refactor, test, build, ci, deps) shows in the
+   changelog/release notes — not just feat/fix. (This controls changelog *visibility* only; it
+   does not change which types cut a release — that's still feat/fix/breaking.)
 
 Templates are in [`templates/`](templates/): `release-please.yaml`,
 `release-please-config.json`, `.release-please-manifest.json` (already dot-prefixed — copy as-is),
