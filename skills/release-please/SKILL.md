@@ -76,7 +76,11 @@ git checkout -b ci/add-release-please
    `GlueOps/github-workflows/.../bump-version-cut-release.yaml`). Two mechanisms = conflicting
    tags/releases. ⚠️ Confirm before deleting: `git rm .github/workflows/bump_version.yaml`.
 2. Copy the templates in. In `release-please-config.json` set `package-name` and pick
-   `release-type`: `node` (Node/SvelteKit), `go` (Go), or `simple` (anything else — `version.txt`).
+   `release-type`: `node` (Node/SvelteKit), `go` (Go), `helm` (Helm chart — bumps `version` in
+   `Chart.yaml`), or `simple` (anything else — tracks `version.txt`). release-please has more
+   types (`python`, `ruby`, `rust`, `terraform-module`, …) — pick the one that matches the repo so
+   the version lands in the right file. **Don't use `simple` for a Helm chart** — it would write a
+   `version.txt` and leave `Chart.yaml` stale.
    ```bash
    mkdir -p .github/workflows
    cp <skill>/templates/release-please.yaml           .github/workflows/release-please.yaml
@@ -117,7 +121,9 @@ Bring a drifted setup to *The convention*. On a branch (`ci/reconcile-release-pl
      (add the `token:` line if absent) — match `templates/release-please.yaml`;
    - add `include-component-in-tag: false`, `changelog-sections`, and (0.x) `bump-minor-pre-major`
      to the config (copy values from `templates/release-please-config.json`; keep the repo's own
-     `package-name`/`release-type`); ensure the manifest exists, seeded to the last version;
+     `package-name`, and make sure `release-type` matches the repo — e.g. switch a Helm chart from
+     `simple` to `helm` so the version lands in `Chart.yaml`); ensure the manifest exists, seeded
+     to the last version;
    - if it has no image-on-tag build, add one (copy `templates/container_image.yaml`).
 3. **Tag-format migration — only if switching `<name>-vX.Y.Z` → plain `vX.Y.Z`.** Create an anchor
    tag in the new format at the latest release commit, so release-please finds the baseline instead
