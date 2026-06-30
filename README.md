@@ -28,6 +28,7 @@ skills/
 | Skill | Use it when |
 |-------|-------------|
 | [release-please](skills/release-please/SKILL.md) | Setting up release-please (versioning, changelog, tags, container-image publishing) on a GlueOps repo for the first time. |
+| [reconcile-release-please](skills/reconcile-release-please/SKILL.md) | Bringing an existing release-please repo up to the current convention (App-token auth, `.yaml`, plain tags, full changelog) — one repo or fleet-wide. |
 | [consolidate-dependency-updates](skills/consolidate-dependency-updates/SKILL.md) | Collapsing a repo's open Renovate/Dependabot PRs (any ecosystem) into one validated, release-triggering PR. |
 
 ## Install & use
