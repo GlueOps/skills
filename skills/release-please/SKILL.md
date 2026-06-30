@@ -77,10 +77,8 @@ git checkout -b ci/add-release-please
    tags/releases. ⚠️ Confirm before deleting: `git rm .github/workflows/bump_version.yaml`.
 2. Copy the templates in. In `release-please-config.json` set `package-name` and pick
    `release-type`: `node` (Node/SvelteKit), `go` (Go), `helm` (Helm chart — bumps `version` in
-   `Chart.yaml`), or `simple` (anything else — tracks `version.txt`). release-please has more
-   types (`python`, `ruby`, `rust`, `terraform-module`, …) — pick the one that matches the repo so
-   the version lands in the right file. **Don't use `simple` for a Helm chart** — it would write a
-   `version.txt` and leave `Chart.yaml` stale.
+   `Chart.yaml`), or `simple` (anything else — tracks `version.txt`). **Don't use `simple` for a
+   Helm chart** — it would write a `version.txt` and leave `Chart.yaml` stale.
    ```bash
    mkdir -p .github/workflows
    cp <skill>/templates/release-please.yaml           .github/workflows/release-please.yaml
