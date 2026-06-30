@@ -1,0 +1,32 @@
+name: validate skills
+
+# Lints every skills/<name>/SKILL.md with agent-ecosystem/skill-validator
+# (Agent Skills spec compliance: frontmatter, name<->dir, tokens, fences,
+# internal links). Structure-only — offline, no external link fetching.
+#
+# Supply chain: installed via `go install ...@vX.Y.Z`, which the Go checksum
+# database (sum.golang.org) verifies — a moved tag with different content
+# fails the build, so the version is effectively immutable. Runs in a
+# digest-pinned Go container per the GlueOps docker convention.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - name: Validate SKILL.md (skill-validator, pinned + sumdb-verified)
+        run: |
+          docker run --rm -v "$PWD":/repo -w /repo \
+            golang:1.25-alpine@sha256:523c3effe300580ed375e43f43b1c9b091b68e935a7c3a92bfcc4e7ed55b18c2 \
+            sh -c '
+              go install github.com/agent-ecosystem/skill-validator/cmd/skill-validator@v1.5.6 &&
+              skill-validator validate structure --strict --allow-dirs=templates skills/
+            '
